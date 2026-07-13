@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from PyPDF2 import PdfReader
 import io
+import base64
 
 app = FastAPI()
 
@@ -10,24 +11,24 @@ async def extract_text(request: Request):
 
     try:
 
-        pdf_bytes = await request.body()
+        data = await request.json()
 
-        # Temporary debugging
-        print("PDF size:", len(pdf_bytes))
-        print("First 50 bytes:", pdf_bytes[:50])
-        print("Last 50 bytes:", pdf_bytes[-50:])
+        base64_pdf = data["pdf_base64"]
+
+        # Convert Base64 back to PDF bytes
+        pdf_bytes = base64.b64decode(base64_pdf)
 
         pdf_file = io.BytesIO(pdf_bytes)
 
-        pdf_reader = PdfReader(pdf_file)
+        reader = PdfReader(pdf_file)
 
         extracted_text = ""
 
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
+        for page in reader.pages:
+            text = page.extract_text()
 
-            if page_text:
-                extracted_text += page_text + "\n"
+            if text:
+                extracted_text += text + "\n"
 
         return {
             "status": "success",
@@ -35,11 +36,7 @@ async def extract_text(request: Request):
         }
 
     except Exception as e:
-
         return {
             "status": "error",
-            "message": str(e),
-            "pdf_size": len(pdf_bytes) if 'pdf_bytes' in locals() else None,
-            "first_50_bytes": str(pdf_bytes[:50]) if 'pdf_bytes' in locals() else None,
-            "last_50_bytes": str(pdf_bytes[-50:]) if 'pdf_bytes' in locals() else None
+            "message": str(e)
         }
