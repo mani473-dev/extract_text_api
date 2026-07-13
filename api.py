@@ -97,7 +97,7 @@ def get_pdf_text(supplier_id):
 
 
 
-            # Download PDF bytes
+            
 
             pdf_response = requests.get(
                 attachment_url,
@@ -111,7 +111,7 @@ def get_pdf_text(supplier_id):
 
 
 
-            # Convert bytes -> PDF -> text
+            
 
             pdf_file = io.BytesIO(pdf_bytes)
 
